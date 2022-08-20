@@ -10,8 +10,7 @@ _Static_assert(__SIZEOF_POINTER__ == 8, "");
 
 #define BUFF_SIZE (1lu << 22)
 
-static  uint8_t S[256], _in[BUFF_SIZE + 7], _out[BUFF_SIZE * 4],
-                V[8] = { 1, 2, 1, 3, 1, 2, 1, 0 };
+static  uint8_t S[256], _in[BUFF_SIZE + 7], _out[BUFF_SIZE * 4];
 static uint32_t L[5] = { 0,         0,     1 << 7,    1 << 11,    1 << 16  },
                 M[5] = { 0, BITMASK(7), BITMASK(5), BITMASK(4), BITMASK(3) };
 
@@ -48,7 +47,7 @@ int main(int argc, char **argv) {
         if (fread(in, 1, rsize, inf) != rsize) return 1;
         const uint8_t *p = _in, *const P = in + rsize; *(uint32_t *)P = 0;
         uint8_t *o = _out;
-        if (encode) {
+        if (encode)
             while (p < P) {
                 uint8_t char_size = S[*p]; if (char_size == 0) return 1;
                 if (p + char_size > P) {
@@ -72,11 +71,11 @@ int main(int argc, char **argv) {
                 c -= 1 << 14;
                 *o++ = 128 | (c & BITMASK(7)), *o++ = 128 | ((c >> 7) & BITMASK(7)), *o++ = c >> 14;
             }
-            if (p == P) in = _in; 
-        } else {
+        else
             while (p < P) {
-                uint8_t char_size = V[(*p >> 7) | ((p[1] >> 7) << 1) | ((p[2] >> 7) << 2)];
-                if (char_size == 0) return 1;
+                uint8_t char_size = 0;
+                for (; (p[char_size] & 128) && char_size < 2; ++char_size);
+                if (p[char_size] & 128) return 1; ++char_size;
                 if (p + char_size > P) {
                     if (insize == 0) return 1;
                     memmove(_in, p, P - p);
@@ -100,8 +99,7 @@ int main(int argc, char **argv) {
                                             *o++ = 128 + (c & BITMASK(6));
                 }
             }
-            if (p == P) in = _in;
-        }
+        if (p == P) in = _in;
         if (fwrite(_out, 1, o - _out, outf) != o - _out) return 1;
     }
     
