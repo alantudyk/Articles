@@ -33,6 +33,8 @@ size_t vl_char_size(uint32_t *c);
 _Bool  vl_char_at(const  str_t *s, size_t i, uint32_t *c);
 _Bool vl_rchar_at(const rstr_t *s, size_t i, uint32_t *c);
 
+_Bool vl_concat(const str_t *a, const str_t *b, str_t *dest);
+
 _Bool  vl_equal(const  str_t *a, const  str_t *b);
 _Bool vl_requal(const rstr_t *a, const rstr_t *b);
   int   vl_cmp (const  str_t *a, const  str_t *b);

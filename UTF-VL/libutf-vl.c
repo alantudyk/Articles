@@ -11,6 +11,36 @@ void vl_rfree(rstr_t *r) {
     *r = (rstr_t){};
 }
 
+size_t vl_char_size(uint32_t *c) {
+    uint8_t *p = (uint8_t *)c;
+    while (*p++ & 128);
+    return (size_t)(p - (uint8_t *)c);
+}
+
+_Bool  vl_char_at(const  str_t *s, size_t _i, uint32_t *_c) {
+    // if (_i >= s->l) return 1;
+    size_t i = 0; const uint8_t *p = s->p; uint8_t *c = (uint8_t *)_c;
+    for (; i < _i; ++i) while (*p++ & 128);
+    for (;;) { *c++ = *p; if ((*p++ & 128) == 0) break; }
+    while (c - (uint8_t *)_c < 4) *c++ = 0;
+    return 0;
+}
+
+_Bool vl_rchar_at(const rstr_t *s, size_t i, uint32_t *c) {
+    
+    return 0;
+}
+
+_Bool vl_concat(const str_t *a, const str_t *b, str_t *c) {
+    if (a->s == 0) return vl_clone(b, c);
+    if (b->s == 0) return vl_clone(a, c);
+    *c = (str_t){ malloc(a->s + b->s) , a->s + b->s };
+    if (c->p == NULL) return 1;
+    memcpy(c->p       , a->p, a->s);
+    memcpy(c->p + a->s, b->p, b->s);
+    return 0;
+}
+
 _Bool  vl_equal(const  str_t *a, const  str_t *b) {
     return a == b || (a->s == b->s && !memcmp(a->p, b->p, a->s));
 }
