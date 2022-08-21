@@ -1,21 +1,10 @@
-#include <stdint.h>
-#include <string.h>
-#include <sys/stat.h>
-#include <stdio.h>
-
-_Static_assert(__SIZEOF_POINTER__ == 8, "");
-
-#define BITMASK_SHL(n, shl) (((1LU << (n)) - 1) << (shl))
-#define BITMASK(n) BITMASK_SHL(n, 0)
+#include "utf-vl.h"
 
 #define BUFF_SIZE (1lu << 22)
 
 static  uint8_t S[256], _in[BUFF_SIZE + 7], _out[BUFF_SIZE * 4];
 static uint32_t L[5] = { 0,         0,     1 << 7,    1 << 11,    1 << 16  },
                 M[5] = { 0, BITMASK(7), BITMASK(5), BITMASK(4), BITMASK(3) };
-
-#define fin(stop) for (ssize_t i = -1, _stop = stop; ++i < _stop;)
-#define fix(start, stop, increment) for (ssize_t i = start, _stop = stop; i < _stop; i += increment)
 
 static void init_S() {
     fin(128)         S[i] = 1;
