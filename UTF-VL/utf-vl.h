@@ -31,6 +31,10 @@ _Bool vl_requal(const rstr_t *a, const rstr_t *b);
   int   vl_cmp (const  str_t *a, const  str_t *b);
   int  vl_rcmp (const rstr_t *a, const rstr_t *b);
 
+_Bool vl_from_8(const str_t  *_8, str_t *_vl);
+_Bool   vl_to_8(const str_t *_vl, str_t  *_8);
 
+_Bool   vl_to_rstr(const  str_t   *_vl, rstr_t  *_rstr);
+_Bool vl_from_rstr(const rstr_t *_rstr,  str_t    *_vl);
 
 #endif
