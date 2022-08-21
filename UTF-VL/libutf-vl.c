@@ -34,7 +34,7 @@ _Bool vl_clone_from_rstr(const rstr_t *_rstr,  str_t    *_vl) {
         malloc(_rstr->c * sizeof(void *)), _rstr->c
     };
     if (r.p == NULL || r.ap == NULL) return 1;
-    memcpy(r.p , _rstr->p, r.s);
-    memcpy(r.ap, _rstr->p, r.c * sizeof(void *));
+    memcpy(r.p , _rstr->p , r.s);
+    memcpy(r.ap, _rstr->ap, r.c * sizeof(void *));
     return vl_move_from_rstr(&r, _vl);
 }
