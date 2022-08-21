@@ -1,7 +1,7 @@
 #ifndef ___UTF_VL_H
 #define ___UTF_VL_H
 
-#include <stdbool.h>
+#include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
 #include <sys/stat.h>
@@ -23,6 +23,9 @@ typedef struct rstr_t {
     size_t   c;
 } rstr_t;
 
+void  vl_free( str_t *s);
+void vl_rfree(rstr_t *r);
+
 _Bool  vl_char_at(const  str_t *s, size_t i, uint32_t *c);
 _Bool vl_rchar_at(const rstr_t *s, size_t i, uint32_t *c);
 
@@ -34,7 +37,10 @@ _Bool vl_requal(const rstr_t *a, const rstr_t *b);
 _Bool vl_from_8(const str_t  *_8, str_t *_vl);
 _Bool   vl_to_8(const str_t *_vl, str_t  *_8);
 
-_Bool   vl_to_rstr(const  str_t   *_vl, rstr_t  *_rstr);
-_Bool vl_from_rstr(const rstr_t *_rstr,  str_t    *_vl);
+_Bool   vl_move_to_rstr( str_t   *_vl, rstr_t  *_rstr);
+_Bool vl_move_from_rstr(rstr_t *_rstr,  str_t    *_vl);
+
+_Bool   vl_clone_to_rstr(const  str_t   *_vl, rstr_t  *_rstr);
+_Bool vl_clone_from_rstr(const rstr_t *_rstr,  str_t    *_vl);
 
 #endif
