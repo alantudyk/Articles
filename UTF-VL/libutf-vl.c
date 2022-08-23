@@ -25,7 +25,7 @@ _Bool  vl_char_at(const  str_t *s, size_t _i, uint32_t *_c) {
 _Bool vl_rchar_at(const rstr_t *r, size_t _i, uint32_t *c) {
     if (_i >= r->l) return 1;
     str_t s = {
-        r->p + (r->s > (1l << 32) ? ((uint64_t *)r->a)[_i / 10] : ((uint32_t *)r->a)[_i / 10]),
+        r->p + (r->s > (1L << 32) ? ((uint64_t *)r->a)[_i / 10] : ((uint32_t *)r->a)[_i / 10]),
         0, 10
     };
     vl_char_at(&s, _i % 10, c);
@@ -99,7 +99,7 @@ _Bool vl_rclone(const rstr_t *a, rstr_t *b) {
 
 _Bool   vl_move_to_rstr( str_t *s, rstr_t *r) {
     if (s->s == 0) { *r = (rstr_t){}; return 0; }
-    _Bool Z = s->s > (1l << 32);
+    _Bool Z = s->s > (1L << 32);
     if ((r->a = malloc(r->z = (s->l / 10 + 1) * 4 * (1 + Z))) == NULL) return 1;
     *(str_t *)r = *s; *s = (str_t){};
     const uint8_t *p = r->p, *const P = p + r->s;
