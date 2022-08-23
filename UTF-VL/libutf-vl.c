@@ -1,6 +1,6 @@
 #include "utf-vl.h"
 
-_Bool vl_validate(uint8_t *p, size_t s, size_t *l) {
+_Bool vl_from_bytes(uint8_t *p, size_t s, str_t *_dest, size_t *tail) {
     
     return 0;
 }
@@ -15,17 +15,19 @@ size_t vl_char_size(uint32_t *c) {
 }
 
 _Bool  vl_char_at(const  str_t *s, size_t _i, uint32_t *_c) {
-    if (_i >= s->l) return 1;
+    if (_i >= s->l) return 1; *_c = 0;
     size_t i = 0; const uint8_t *p = s->p; uint8_t *c = (uint8_t *)_c;
     for (; i < _i; ++i) while (*p++ & 128);
     do *c++ = *p; while (*p++ & 128);
-    while (c - (uint8_t *)_c < 4) *c++ = 0;
     return 0;
 }
 
 _Bool vl_rchar_at(const rstr_t *r, size_t _i, uint32_t *c) {
     if (_i >= r->l) return 1;
-    str_t s = { r->p + r->a[_i / 10] , 0, 10 };
+    str_t s = {
+        r->p + (r->s > (1l << 32) ? ((uint64_t *)r->a)[_i / 10] : ((uint32_t *)r->a)[_i / 10]),
+        0, 10
+    };
     vl_char_at(&s, _i % 10, c);
     return 0;
 }
@@ -41,11 +43,32 @@ _Bool vl_concat(const str_t *a, const str_t *b, str_t *c) {
 }
 
 _Bool  vl_equal(const  str_t *a, const  str_t *b) {
-    return a == b || (a->s == b->s && !memcmp(a->p, b->p, a->s));
+    return a == b || (a->s == b->s && a->l == b->l && !memcmp(a->p, b->p, a->s));
 }
 
 _Bool vl_requal(const rstr_t *a, const rstr_t *b) {
     return vl_equal((const str_t *)a, (const str_t *)b);
+}
+
+int  vl_cmp(const  str_t *a, const  str_t *b) {
+    
+    return 0;
+}
+
+int vl_rcmp(const rstr_t *a, const rstr_t *b) {
+    
+    return 0;
+}
+
+
+_Bool vl_from_8(const str_t *_8, str_t *_s) {
+    
+    return 0;
+}
+
+_Bool   vl_to_8(const str_t *_s, str_t *_8) {
+    
+    return 0;
 }
 
 void  vl_move( str_t *a,  str_t *b) { *b = *a; *a = ( str_t){}; }
@@ -61,14 +84,17 @@ _Bool  vl_clone(const  str_t *a,  str_t *b) {
 
 _Bool vl_rclone(const rstr_t *a, rstr_t *b) {
     if (a->s == 0) { *b = (rstr_t){}; return 0; }
-    *b = *a, b->p = malloc(b->s), b->a = malloc(b->c);
+    *b = *a, b->p = malloc(b->s), b->a = malloc(b->z);
     if (b->p == NULL || b->a == NULL) return 1;
     memcpy(b->p, a->p, b->s);
-    memcpy(b->a, a->a, b->c);
+    memcpy(b->a, a->a, b->z);
     return 0;
 }
 
 _Bool   vl_move_to_rstr( str_t *s, rstr_t *r) {
+    if (s->s == 0) { *r = (rstr_t){}; return 0; }
+    _Bool Z = r->s > (1l << 32);
+    if ((r->a = malloc(r->z = (s->l / 10 + 1) * 4 * (1 + Z))) == NULL) return 1;
     
     return 0;
 }
