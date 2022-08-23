@@ -13,7 +13,11 @@ _Static_assert(__SIZEOF_POINTER__ == 8, "");
 #define BITMASK(n) BITMASK_SHL(n, 0)
 
 #define fin(stop) for (ssize_t i = -1, _stop = stop; ++i < _stop;)
-#define fix(start, stop, increment) for (ssize_t i = start, _stop = stop; i < _stop; i += increment)
+#define fiN(iter_name, stop) for (ssize_t iter_name = -1, _stop = stop; ++iter_name < _stop;)
+#define fix(start, stop, increment) \
+    for (ssize_t i = start, _stop = stop; i < _stop; i += increment)
+#define fiX(iter_name, start, stop, increment) \
+    for (ssize_t iter_name = start, _stop = stop; iter_name < _stop; iter_name += increment)
 
 typedef struct  str_t { uint8_t *p; size_t s, l;             }  str_t;
 typedef struct rstr_t { uint8_t *p; size_t s, l, z; void *a; } rstr_t;

@@ -51,8 +51,16 @@ _Bool vl_requal(const rstr_t *a, const rstr_t *b) {
 }
 
 int  vl_cmp(const  str_t *a, const  str_t *b) {
-    
-    return 0;
+    if (a->l > b->l) { const void *t = a; a = b, b = t; }
+    const uint8_t *pa = a->p, *pb = b->p;
+    fiN(_, a->l) {
+        uint32_t ca = 0, cb = 0;
+        uint8_t *cpa = (void *)&ca, *cpb = (void *)&cb;
+        do *cpa++ = *pa; while (*pa++ & 128);
+        do *cpb++ = *pb; while (*pb++ & 128);
+        if (ca != cb) return (ca > cb) - (ca < cb);
+    }
+    return -(b->l > a->l);
 }
 
 int vl_rcmp(const rstr_t *a, const rstr_t *b) {
