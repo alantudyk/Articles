@@ -64,10 +64,8 @@ int  vl_cmp(const  str_t *a, const  str_t *b) {
 }
 
 int vl_rcmp(const rstr_t *a, const rstr_t *b) {
-    
-    return 0;
+    return vl_cmp((const str_t *)a, (const str_t *)b);
 }
-
 
 _Bool vl_from_8(const str_t *_8, str_t *_s) {
     
