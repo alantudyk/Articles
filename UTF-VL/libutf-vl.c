@@ -99,9 +99,14 @@ _Bool vl_rclone(const rstr_t *a, rstr_t *b) {
 
 _Bool   vl_move_to_rstr( str_t *s, rstr_t *r) {
     if (s->s == 0) { *r = (rstr_t){}; return 0; }
-    _Bool Z = r->s > (1l << 32);
+    _Bool Z = s->s > (1l << 32);
     if ((r->a = malloc(r->z = (s->l / 10 + 1) * 4 * (1 + Z))) == NULL) return 1;
-    
+    *(str_t *)r = *s; *s = (str_t){};
+    const uint8_t *p = r->p, *const P = p + r->s;
+    fiN(j, r->l / 10 + 1) {
+        if (Z) ((uint64_t *)r->a)[j] = p - r->p; else ((uint32_t *)r->a)[j] = p - r->p;
+        fiN(_, 10) { while (*p++ & 128); if (p == P) break; }
+    }
     return 0;
 }
 
