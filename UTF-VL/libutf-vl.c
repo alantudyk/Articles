@@ -25,10 +25,10 @@ _Bool  vl_char_at(const  str_t *s, size_t _i, int32_t *_c) {
 _Bool vl_rchar_at(const rstr_t *r, size_t _i, int32_t *c) {
     if (_i >= r->l) return 1;
     str_t s = {
-        r->p + (r->s > (1L << 32) ? ((uint64_t *)r->a)[_i / 10] : ((uint32_t *)r->a)[_i / 10]),
-        0, 10
+        r->p + (r->s > (1L << 32) ? ((uint64_t *)r->a)[_i / 16] : ((uint32_t *)r->a)[_i / 16]),
+        0, 16
     };
-    vl_char_at(&s, _i % 10, c);
+    vl_char_at(&s, _i % 16, c);
     return 0;
 }
 
@@ -100,12 +100,12 @@ _Bool vl_rclone(const rstr_t *a, rstr_t *b) {
 _Bool   vl_move_to_rstr( str_t *s, rstr_t *r) {
     if (s->s == 0) { *r = (rstr_t){}; return 0; }
     _Bool Z = s->s > (1L << 32);
-    if ((r->a = malloc(r->z = (s->l / 10 + 1) * 4 * (1 + Z))) == NULL) return 1;
+    if ((r->a = malloc(r->z = (s->l / 16 + 1) * 4 * (1 + Z))) == NULL) return 1;
     *(str_t *)r = *s; *s = (str_t){};
     const uint8_t *p = r->p, *const P = p + r->s;
-    fiN(j, r->l / 10 + 1) {
+    fiN(j, r->l / 16 + 1) {
         if (Z) ((uint64_t *)r->a)[j] = p - r->p; else ((uint32_t *)r->a)[j] = p - r->p;
-        fiN(_, 10) { while (*p++ & 128); if (p == P) break; }
+        fiN(_, 16) { while (*p++ & 128); if (p == P) break; }
     }
     return 0;
 }
