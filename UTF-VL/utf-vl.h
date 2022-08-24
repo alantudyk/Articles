@@ -23,6 +23,11 @@ typedef struct  str_t { uint8_t *p; size_t s, l;          }  str_t;
 typedef struct junk_t { uint8_t *p; size_t s, l;          } junk_t;
 typedef struct rstr_t { uint8_t *p; size_t s, l; void *a; } rstr_t;
 
+typedef struct vl_iterator_t { uint8_t *p; size_t l; } vl_iterator_t;
+
+ void vl_init(vl_iterator_t *iterator, const str_t *s);
+_Bool vl_next(vl_iterator_t *iterator,     int32_t *c);
+
 _Bool   vl_from_bytes(uint8_t *p, size_t s,  str_t *_dest, size_t *tail);
 _Bool vl_8_from_bytes(uint8_t *p, size_t s, junk_t *_dest, size_t *tail);
 

@@ -1,6 +1,17 @@
 #include "utf-vl.h"
 
-_Bool   vl_from_bytes(uint8_t *p, size_t s, str_t *_dest, size_t *tail) {
+ void vl_init(vl_iterator_t *i, const str_t *s) {
+    *i = (vl_iterator_t){ s->p, s->l };
+}
+
+_Bool vl_next(vl_iterator_t *i,     int32_t *_c) {
+    if (i->l == 0) return 1; i->l--, *_c = 0;
+    uint8_t *c = (uint8_t *)_c;
+    do *c++ = *(i->p); while (*(i->p)++ & 128);
+    return 0;
+}
+
+_Bool   vl_from_bytes(uint8_t *p, size_t s,  str_t *_dest, size_t *tail) {
     
     return 0;
 }
