@@ -16,8 +16,8 @@ size_t vl_char_size(int32_t *c) {
 
 _Bool  vl_char_at(const  str_t *s, size_t _i, int32_t *_c) {
     if (_i >= s->l) return 1; *_c = 0;
-    size_t i = 0; const uint8_t *p = s->p; uint8_t *c = (uint8_t *)_c;
-    for (; i < _i; ++i) while (*p++ & 128);
+    const uint8_t *p = s->p; uint8_t *c = (uint8_t *)_c;
+    fin(_i) while (*p++ & 128);
     do *c++ = *p; while (*p++ & 128);
     return 0;
 }
