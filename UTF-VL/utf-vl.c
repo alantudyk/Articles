@@ -29,7 +29,7 @@ int main(int argc, char **argv) {
     if (inf == NULL || fstat(fileno(inf), &instat) != 0 || outf == NULL) return 1;
     uint64_t insize = instat.st_size; init_S(); uint8_t *in = _in;
     
-    _Bool encode = !strcmp(argv[1], "-e");
+    const _Bool encode = !strcmp(argv[1], "-e");
     
     while (insize > 0) {
         const uint64_t rsize = (insize < BUFF_SIZE) ? insize : BUFF_SIZE; insize -= rsize;
@@ -51,14 +51,12 @@ int main(int argc, char **argv) {
                     c = (c << 6) | (*p++ & BITMASK(6));
                 }
                 if (c < L[char_size]) return 1;
-                if (c < 128) { *o++ = c; continue; }
-                c -= 128;
-                if (c < (1 << 14)) {
+                if (c < 128) *o++ = c; else if ((c -= 128) < (1 << 14)) {
                     *o++ = 128 | (c & BITMASK(7)), *o++ = c >> 7;
-                    continue;
+                } else {
+                    *o++ = 128 | ((c -= 1 << 14) & BITMASK(7)),
+                    *o++ = 128 | ((c >>       7) & BITMASK(7)), *o++ = c >> 14;
                 }
-                c -= 1 << 14;
-                *o++ = 128 | (c & BITMASK(7)), *o++ = 128 | ((c >> 7) & BITMASK(7)), *o++ = c >> 14;
             }
         else
             while (p < P) {
@@ -73,19 +71,16 @@ int main(int argc, char **argv) {
                 }
                 uint32_t c = *p++ & BITMASK(7);
                 fix(1, char_size, 1) c |= (*p++ & BITMASK(7)) << (7 * i);
-                switch(char_size) {
-                    case 3: c += 1 << 14;
-                    case 2: c += 128;
-                }
+                if (char_size > 1) c += (char_size < 3) ? 128 : (1 << 14) + 128;
                 if (c < 128) *o++ = c; else if (c < (1 << 11)) {
-                    *o++ = 192 | (c >>  6), *o++ = 128 + (c & BITMASK(6));
+                    *o++ = 192 | (c >>  6), *o++ = 128 | ( c        & BITMASK(6));
                 } else if (c < (1 << 16)) {
-                    *o++ = 224 | (c >> 12), *o++ = 128 + ((c >> 6) & BITMASK(6)),
-                                            *o++ = 128 + (c & BITMASK(6));
+                    *o++ = 224 | (c >> 12), *o++ = 128 | ((c >> 6)  & BITMASK(6)),
+                                            *o++ = 128 | ( c        & BITMASK(6));
                 } else {
-                    *o++ = 240 | (c >> 18), *o++ = 128 + ((c >> 12) & BITMASK(6)),
-                                            *o++ = 128 + ((c >>  6) & BITMASK(6)),
-                                            *o++ = 128 + (c & BITMASK(6));
+                    *o++ = 240 | (c >> 18), *o++ = 128 | ((c >> 12) & BITMASK(6)),
+                                            *o++ = 128 | ((c >>  6) & BITMASK(6)),
+                                            *o++ = 128 | ( c        & BITMASK(6));
                 }
             }
         if (p == P) in = _in;
