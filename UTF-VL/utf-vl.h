@@ -27,10 +27,10 @@ _Bool vl_from_bytes(uint8_t *p, size_t s, str_t *_dest, size_t *tail);
 void  vl_free( str_t *s);
 void vl_rfree(rstr_t *r);
 
-size_t vl_char_size(uint32_t *c);
+size_t vl_char_size(int32_t *c);
 
-_Bool  vl_char_at(const  str_t *s, size_t i, uint32_t *c);
-_Bool vl_rchar_at(const rstr_t *r, size_t i, uint32_t *c);
+_Bool  vl_char_at(const  str_t *s, size_t i, int32_t *c);
+_Bool vl_rchar_at(const rstr_t *r, size_t i, int32_t *c);
 
 _Bool vl_concat(const str_t *a, const str_t *b, str_t *_dest);
 

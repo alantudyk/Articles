@@ -8,13 +8,13 @@ _Bool vl_from_bytes(uint8_t *p, size_t s, str_t *_dest, size_t *tail) {
 void  vl_free( str_t *s) { free(s->p);             *s = ( str_t){}; }
 void vl_rfree(rstr_t *r) { free(r->p); free(r->a); *r = (rstr_t){}; }
 
-size_t vl_char_size(uint32_t *c) {
+size_t vl_char_size(int32_t *c) {
     uint8_t *p = (uint8_t *)c;
     while (*p++ & 128);
     return (size_t)(p - (uint8_t *)c);
 }
 
-_Bool  vl_char_at(const  str_t *s, size_t _i, uint32_t *_c) {
+_Bool  vl_char_at(const  str_t *s, size_t _i, int32_t *_c) {
     if (_i >= s->l) return 1; *_c = 0;
     size_t i = 0; const uint8_t *p = s->p; uint8_t *c = (uint8_t *)_c;
     for (; i < _i; ++i) while (*p++ & 128);
@@ -22,7 +22,7 @@ _Bool  vl_char_at(const  str_t *s, size_t _i, uint32_t *_c) {
     return 0;
 }
 
-_Bool vl_rchar_at(const rstr_t *r, size_t _i, uint32_t *c) {
+_Bool vl_rchar_at(const rstr_t *r, size_t _i, int32_t *c) {
     if (_i >= r->l) return 1;
     str_t s = {
         r->p + (r->s > (1L << 32) ? ((uint64_t *)r->a)[_i / 10] : ((uint32_t *)r->a)[_i / 10]),
@@ -54,11 +54,11 @@ int  vl_cmp(const  str_t *a, const  str_t *b) {
     if (a->l > b->l) { const void *t = a; a = b, b = t; }
     const uint8_t *pa = a->p, *pb = b->p;
     fiN(_, a->l) {
-        uint32_t ca = 0, cb = 0;
+        int32_t ca = 0, cb = 0;
         uint8_t *cpa = (void *)&ca, *cpb = (void *)&cb;
         do *cpa++ = *pa; while (*pa++ & 128);
         do *cpb++ = *pb; while (*pb++ & 128);
-        if (ca != cb) return (int)ca - (int)cb;
+        if (ca != cb) return ca - cb;
     }
     return -(b->l > a->l);
 }
