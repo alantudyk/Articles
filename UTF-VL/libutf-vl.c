@@ -20,6 +20,17 @@ _Bool   vl_from_bytes(uint8_t *p, size_t s,  str_t *_dest, size_t *tail) {
     return 0;
 }
 
+static  uint8_t junk_S[256];
+static uint32_t junk_L[5] = { 0,         0,     1 << 7,    1 << 11,    1 << 16  },
+                junk_M[5] = { 0, BITMASK(7), BITMASK(5), BITMASK(4), BITMASK(3) };
+
+static void init_junk_S() {
+    fin(128)         junk_S[i] = 1;
+    fix(192, 224, 1) junk_S[i] = 2;
+    fix(224, 240, 1) junk_S[i] = 3;
+    fix(240, 248, 1) junk_S[i] = 4;
+}
+
 _Bool vl_8_from_bytes(uint8_t *p, size_t s, junk_t *_dest, size_t *tail) {
     
     return 0;
@@ -90,7 +101,18 @@ int vl_rcmp(const rstr_t *a, const rstr_t *b) {
 _Bool vl_from_8(const junk_t *_8,  str_t *_s) {
     if (_8->s == 0) { *_s = ( str_t){}; return 0; }
     uint8_t *o = _s->p = malloc(_8->s); if (o == NULL) return 1;
-    
+    const uint8_t *p = _8->p, *const P = p + _8->s; init_junk_S();
+    while (p < P) {
+        uint32_t char_size = junk_S[*p], c = *p++ & junk_M[char_size]; _s->l++;
+        fix (1, char_size, 1) c = (c << 6) | (*p++ & BITMASK(6));
+        if (c < 128) *o++ = c; else if ((c -= 128) < (1 << 14)) {
+            *o++ = 128 | (c & BITMASK(7)), *o++ = c >> 7;
+        } else {
+            *o++ = 128 | ((c -= 1 << 14) & BITMASK(7)),
+            *o++ = 128 | ((c >>       7) & BITMASK(7)), *o++ = c >> 14;
+        }
+    }
+    _s->p = realloc(_s->p, _s->s = o - _s->p);
     return 0;
 }
 
@@ -99,7 +121,7 @@ _Bool   vl_to_8(const  str_t *_s, junk_t *_8) {
     uint8_t *o = _8->p = malloc(_s->s * 2); if (o == NULL) return 1;
     const uint8_t *p = _s->p, *_p, *const P = p + _s->s;
     while (p < P) {
-        int32_t c = 0, char_size; _p = p;
+        uint32_t c = 0, char_size; _p = p;
         fin(3) {
             c |= (*p & BITMASK(7)) << (7 * i);
             if ((*p++ & 128) == 0) break;
