@@ -1,6 +1,11 @@
 #include "utf-vl.h"
 
-_Bool vl_from_bytes(uint8_t *p, size_t s, str_t *_dest, size_t *tail) {
+_Bool   vl_from_bytes(uint8_t *p, size_t s, str_t *_dest, size_t *tail) {
+    
+    return 0;
+}
+
+_Bool vl_8_from_bytes(uint8_t *p, size_t s, junk_t *_dest, size_t *tail) {
     
     return 0;
 }
@@ -67,12 +72,12 @@ int vl_rcmp(const rstr_t *a, const rstr_t *b) {
     return vl_cmp((const str_t *)a, (const str_t *)b);
 }
 
-_Bool vl_from_8(const str_t *_8, str_t *_s) {
+_Bool vl_from_8(const junk_t *_8,  str_t *_s) {
     
     return 0;
 }
 
-_Bool   vl_to_8(const str_t *_s, str_t *_8) {
+_Bool   vl_to_8(const  str_t *_s, junk_t *_8) {
     
     return 0;
 }
