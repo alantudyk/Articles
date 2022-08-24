@@ -58,7 +58,7 @@ int  vl_cmp(const  str_t *a, const  str_t *b) {
         uint8_t *cpa = (void *)&ca, *cpb = (void *)&cb;
         do *cpa++ = *pa; while (*pa++ & 128);
         do *cpb++ = *pb; while (*pb++ & 128);
-        if (ca != cb) return (ca > cb) - (ca < cb);
+        if (ca != cb) return (int)ca - (int)cb;
     }
     return -(b->l > a->l);
 }
