@@ -1,7 +1,11 @@
 #include "utf-vl.h"
 
-void vl_init(vl_iterator_t *i, const str_t *s) {
+void  vl_init(vl_iterator_t *i, const  str_t *s) {
     *i = (vl_iterator_t){ s->p, s->l };
+}
+
+void vl_rinit(vl_iterator_t *i, const rstr_t *r) {
+    vl_init(i, (const str_t *)r);
 }
 
 _Bool vl_next(vl_iterator_t *i, int32_t *_c) {
