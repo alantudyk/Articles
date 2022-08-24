@@ -19,15 +19,15 @@ _Static_assert(__SIZEOF_POINTER__ == 8, "");
 #define fiX(iter_name, start, stop, increment) \
     for (ssize_t iter_name = start, _stop = stop; iter_name < _stop; iter_name += increment)
 
-typedef struct  str_t { uint8_t *p; size_t s, l;             }  str_t;
-typedef struct rstr_t { uint8_t *p; size_t s, l, z; void *a; } rstr_t;
+typedef struct  str_t { uint8_t *p; size_t s, l;          }  str_t;
+typedef struct rstr_t { uint8_t *p; size_t s, l; void *a; } rstr_t;
 
 _Bool vl_from_bytes(uint8_t *p, size_t s, str_t *_dest, size_t *tail);
 
 void  vl_free( str_t *s);
 void vl_rfree(rstr_t *r);
 
-size_t vl_char_size(int32_t *c);
+size_t vl_char_size(const int32_t *c);
 
 _Bool  vl_char_at(const  str_t *s, size_t i, int32_t *c);
 _Bool vl_rchar_at(const rstr_t *r, size_t i, int32_t *c);

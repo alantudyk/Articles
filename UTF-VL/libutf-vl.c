@@ -8,10 +8,10 @@ _Bool vl_from_bytes(uint8_t *p, size_t s, str_t *_dest, size_t *tail) {
 void  vl_free( str_t *s) { free(s->p);             *s = ( str_t){}; }
 void vl_rfree(rstr_t *r) { free(r->p); free(r->a); *r = (rstr_t){}; }
 
-size_t vl_char_size(int32_t *c) {
-    uint8_t *p = (uint8_t *)c;
+size_t vl_char_size(const int32_t *c) {
+    const uint8_t *p = (const uint8_t *)c;
     while (*p++ & 128);
-    return (size_t)(p - (uint8_t *)c);
+    return (size_t)(p - (const uint8_t *)c);
 }
 
 _Bool  vl_char_at(const  str_t *s, size_t _i, int32_t *_c) {
@@ -24,7 +24,7 @@ _Bool  vl_char_at(const  str_t *s, size_t _i, int32_t *_c) {
 
 _Bool vl_rchar_at(const rstr_t *r, size_t _i, int32_t *c) {
     if (_i >= r->l) return 1;
-    str_t s = {
+    const str_t s = {
         r->p + (r->s > (1L << 32) ? ((uint64_t *)r->a)[_i / 16] : ((uint32_t *)r->a)[_i / 16]),
         0, 16
     };
@@ -90,17 +90,18 @@ _Bool  vl_clone(const  str_t *a,  str_t *b) {
 
 _Bool vl_rclone(const rstr_t *a, rstr_t *b) {
     if (a->s == 0) { *b = (rstr_t){}; return 0; }
-    *b = *a, b->p = malloc(b->s), b->a = malloc(b->z);
+    const size_t z = (a->l / 16 + 1) * 4 * (1 + (a->s > (1L << 32)));
+    *b = *a, b->p = malloc(b->s), b->a = malloc(z);
     if (b->p == NULL || b->a == NULL) return 1;
     memcpy(b->p, a->p, b->s);
-    memcpy(b->a, a->a, b->z);
+    memcpy(b->a, a->a,    z);
     return 0;
 }
 
 _Bool   vl_move_to_rstr( str_t *s, rstr_t *r) {
     if (s->s == 0) { *r = (rstr_t){}; return 0; }
     _Bool Z = s->s > (1L << 32);
-    if ((r->a = malloc(r->z = (s->l / 16 + 1) * 4 * (1 + Z))) == NULL) return 1;
+    if ((r->a = malloc((s->l / 16 + 1) * 4 * (1 + Z))) == NULL) return 1;
     *(str_t *)r = *s; *s = (str_t){};
     const uint8_t *p = r->p, *const P = p + r->s;
     fiN(j, r->l / 16 + 1) {
