@@ -19,8 +19,8 @@ _Static_assert(__SIZEOF_POINTER__ == 8, "");
 #define fiX(iter_name, start, stop, increment) \
     for (ssize_t iter_name = start, _stop = stop; iter_name < _stop; iter_name += increment)
 
+typedef struct junk_t { uint8_t *p; size_t s;             } junk_t;
 typedef struct  str_t { uint8_t *p; size_t s, l;          }  str_t;
-typedef struct junk_t { uint8_t *p; size_t s, l;          } junk_t;
 typedef struct rstr_t { uint8_t *p; size_t s, l; void *a; } rstr_t;
 
 typedef struct vl_iterator_t { uint8_t *p; size_t l; } vl_iterator_t;

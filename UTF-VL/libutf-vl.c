@@ -88,12 +88,36 @@ int vl_rcmp(const rstr_t *a, const rstr_t *b) {
 }
 
 _Bool vl_from_8(const junk_t *_8,  str_t *_s) {
+    if (_8->s == 0) { *_s = ( str_t){}; return 0; }
+    uint8_t *o = _s->p = malloc(_8->s); if (o == NULL) return 1;
     
     return 0;
 }
 
 _Bool   vl_to_8(const  str_t *_s, junk_t *_8) {
-    
+    if (_s->s == 0) { *_8 = (junk_t){}; return 0; }
+    uint8_t *o = _8->p = malloc(_s->s * 2); if (o == NULL) return 1;
+    const uint8_t *p = _s->p, *_p, *const P = p + _s->s;
+    while (p < P) {
+        int32_t c = 0, char_size; _p = p;
+        fin(3) {
+            c |= (*p & BITMASK(7)) << (7 * i);
+            if ((*p++ & 128) == 0) break;
+        }
+        char_size = p - _p;
+        if (char_size > 1) c += (char_size < 3) ? 128 : (1 << 14) + 128;
+        if (c < 128) *o++ = c; else if (c < (1 << 11)) {
+            *o++ = 192 | (c >>  6), *o++ = 128 | ( c        & BITMASK(6));
+        } else if (c < (1 << 16)) {
+            *o++ = 224 | (c >> 12), *o++ = 128 | ((c >> 6)  & BITMASK(6)),
+                                    *o++ = 128 | ( c        & BITMASK(6));
+        } else {
+            *o++ = 240 | (c >> 18), *o++ = 128 | ((c >> 12) & BITMASK(6)),
+                                    *o++ = 128 | ((c >>  6) & BITMASK(6)),
+                                    *o++ = 128 | ( c        & BITMASK(6));
+        }
+    }
+    _8->p = realloc(_8->p, _8->s = o - _8->p);
     return 0;
 }
 
