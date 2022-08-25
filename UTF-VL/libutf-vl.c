@@ -21,18 +21,15 @@ _Bool   vl_from_bytes(const uint8_t *p, size_t s,  str_t *_dest, size_t *tail) {
     if ((*tail = t - P) == 3) return 1; P -= 2;
     *_dest = (str_t){ (uint8_t *)p, s - *tail, 0 };
     while (p < P) {
-        uint32_t c = 0, char_size; t = p; _dest->l++;
+        uint32_t c = 0; _dest->l++;
         fin(3) {
             c |= (*p & BITMASK(7)) << (7 * i);
             if ((*p++ & 128) == 0) break;
         }
         if (p[-1] & 128) return 1;
-        char_size = p - t;
-        if (char_size > 1) c += (char_size < 3) ? 128 : (1 << 14) + 128;
-        if (c > 1114111) return 1;
+        if (c > 1114111 - ((1 << 14) + 128)) return 1;
     }
     switch ((P + 2) - p) {
-        case 0: break;
         case 1: _dest->l++; break;
         case 2: _dest->l += (*p & 128) ? 1 : 2;
     }
