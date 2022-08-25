@@ -33,8 +33,8 @@ _Bool   vl_from_bytes(const uint8_t *p, size_t s,  str_t *_dest, size_t *tail) {
     }
     switch ((P + 2) - p) {
         case 0: break;
-        case 1: _dest->l++;
-        case 2: if ((*p & 128) == 0) { _dest->l++; break; }
+        case 1: _dest->l++; break;
+        case 2: _dest->l += (*p & 128) ? 1 : 2;
     }
     return 0;
 }
