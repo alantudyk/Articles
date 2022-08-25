@@ -39,12 +39,26 @@ static const  uint8_t junk_S[256] = {
     
 };
 
-static const uint32_t junk_L[5] = { 0,         0,     1 << 7,    1 << 11,    1 << 16  },
+static const uint32_t junk_L[5] = { 0,         0 ,    1 << 7 ,   1 << 11 ,   1 << 16  },
                       junk_M[5] = { 0, BITMASK(7), BITMASK(5), BITMASK(4), BITMASK(3) };
 
 _Bool vl_8_from_bytes(const uint8_t *p, size_t s, junk_t *_dest, size_t *tail) {
-    const uint8_t *t = p + s, *P = t - 3;
-    
+    if (s == 0) return 1; const uint8_t *const P = p + s; *tail = 0;
+    *_dest = (junk_t){ (uint8_t *)p, s };
+    while (p < P) {
+        uint8_t char_size = junk_S[*p]; if (char_size == 0) return 1;
+        if (p + char_size > P) {
+            if ((*tail = P - p) == s) return 1;
+            _dest->s -= *tail;
+            return 0;
+        }
+        uint32_t c = *p++ & junk_M[char_size];
+        fix (1, char_size, 1) {
+            if ((*p >> 6) != 2) return 1;
+            c = (c << 6) | (*p++ & BITMASK(6));
+        }
+        if (c < junk_L[char_size] || c > 1114111) return 1;
+    }
     return 0;
 }
 
