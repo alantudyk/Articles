@@ -1,7 +1,5 @@
 #include "utf-vl.h"
 
-#define BETWEEN(l, v, r) ((l) <= (v) && (v) <= (r))
-
 void  vl_init(vl_iterator_t *i, const  str_t *s) {
     *i = (vl_iterator_t){ s->p, s->l };
 }
@@ -31,14 +29,12 @@ _Bool   vl_from_bytes(const uint8_t *p, size_t s,  str_t *_dest, size_t *tail) {
         if (p[-1] & 128) return 1;
         char_size = p - t;
         if (char_size > 1) c += (char_size < 3) ? 128 : (1 << 14) + 128;
-        if (c > 1114111 || BETWEEN(2048, c, 4095)) return 1;
+        if (c > 1114111) return 1;
     }
     switch ((P + 2) - p) {
         case 0: break;
         case 1: _dest->l++;
         case 2: if ((*p & 128) == 0) { _dest->l++; break; }
-                uint32_t c = ((p[1] << 7) | (p[0] & BITMASK(7))) + 128;
-                if (BETWEEN(2048, c, 4095)) return 1;
     }
     return 0;
 }
