@@ -1,4 +1,16 @@
+#include <stdlib.h>
+#include <string.h>
 #include "utf-vl.h"
+
+#define BITMASK_SHL(n, shl) (((1LU << (n)) - 1) << (shl))
+#define BITMASK(n) BITMASK_SHL(n, 0)
+
+#define fin(stop) for (ssize_t i = -1, _stop = stop; ++i < _stop;)
+#define fiN(iter_name, stop) for (ssize_t iter_name = -1, _stop = stop; ++iter_name < _stop;)
+#define fix(start, stop, increment) \
+    for (ssize_t i = start, _stop = stop; i < _stop; i += increment)
+#define fiX(iter_name, start, stop, increment) \
+    for (ssize_t iter_name = start, _stop = stop; iter_name < _stop; iter_name += increment)
 
 void  vl_init(vl_iterator_t *i, const  str_t *s) {
     *i = (vl_iterator_t){ s->p, s->l };

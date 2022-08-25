@@ -1,17 +1,12 @@
+#include <sys/stat.h>
+#include <stdlib.h>
+#include <string.h>
 #include "utf-vl.h"
+#include <stdio.h>
 
-#define BUFF_SIZE (1lu << 22)
+#define BUFF_SIZE (1 << 22)
 
-static  uint8_t S[256], _in[BUFF_SIZE + 7], _out[BUFF_SIZE * 4];
-static uint32_t L[5] = { 0,         0,     1 << 7,    1 << 11,    1 << 16  },
-                M[5] = { 0, BITMASK(7), BITMASK(5), BITMASK(4), BITMASK(3) };
-
-static void init_S() {
-    fin(128)         S[i] = 1;
-    fix(192, 224, 1) S[i] = 2;
-    fix(224, 240, 1) S[i] = 3;
-    fix(240, 248, 1) S[i] = 4;
-}
+static uint8_t _in[BUFF_SIZE + 3];
 
 int main(int argc, char **argv) {
     
@@ -27,64 +22,25 @@ int main(int argc, char **argv) {
     
     FILE *inf = fopen(argv[2], "rb"), *outf = fopen(argv[3], "wb"); struct stat instat;
     if (inf == NULL || fstat(fileno(inf), &instat) != 0 || outf == NULL) return 1;
-    uint64_t insize = instat.st_size; init_S(); uint8_t *in = _in;
+    uint64_t insize = instat.st_size, tail = 0; uint8_t *in = _in;
     
     const _Bool encode = !strcmp(argv[1], "-e");
     
     while (insize > 0) {
         const uint64_t rsize = (insize < BUFF_SIZE) ? insize : BUFF_SIZE; insize -= rsize;
-        if (fread(in, 1, rsize, inf) != rsize) return 1;
-        const uint8_t *p = _in, *const P = in + rsize; *(uint32_t *)P = 0;
-        uint8_t *o = _out;
-        if (encode)
-            while (p < P) {
-                uint8_t char_size = S[*p]; if (char_size == 0) return 1;
-                if (p + char_size > P) {
-                    if (insize == 0) return 1;
-                    memmove(_in, p, P - p);
-                    in = _in + (P - p);
-                    break;
-                }
-                uint32_t c = *p++ & M[char_size];
-                fix (1, char_size, 1) {
-                    if ((*p >> 6) != 2) return 1;
-                    c = (c << 6) | (*p++ & BITMASK(6));
-                }
-                if (c < L[char_size]) return 1;
-                if (c < 128) *o++ = c; else if ((c -= 128) < (1 << 14)) {
-                    *o++ = 128 | (c & BITMASK(7)), *o++ = c >> 7;
-                } else {
-                    *o++ = 128 | ((c -= 1 << 14) & BITMASK(7)),
-                    *o++ = 128 | ((c >>       7) & BITMASK(7)), *o++ = c >> 14;
-                }
-            }
-        else
-            while (p < P) {
-                uint8_t char_size = 0;
-                for (; (p[char_size] & 128) && char_size < 2; ++char_size);
-                if (p[char_size] & 128) return 1; ++char_size;
-                if (p + char_size > P) {
-                    if (insize == 0) return 1;
-                    memmove(_in, p, P - p);
-                    in = _in + (P - p);
-                    break;
-                }
-                uint32_t c = *p++ & BITMASK(7);
-                fix(1, char_size, 1) c |= (*p++ & BITMASK(7)) << (7 * i);
-                if (char_size > 1) c += (char_size < 3) ? 128 : (1 << 14) + 128;
-                if (c < 128) *o++ = c; else if (c < (1 << 11)) {
-                    *o++ = 192 | (c >>  6), *o++ = 128 | ( c        & BITMASK(6));
-                } else if (c < (1 << 16)) {
-                    *o++ = 224 | (c >> 12), *o++ = 128 | ((c >> 6)  & BITMASK(6)),
-                                            *o++ = 128 | ( c        & BITMASK(6));
-                } else {
-                    *o++ = 240 | (c >> 18), *o++ = 128 | ((c >> 12) & BITMASK(6)),
-                                            *o++ = 128 | ((c >>  6) & BITMASK(6)),
-                                            *o++ = 128 | ( c        & BITMASK(6));
-                }
-            }
-        if (p == P) in = _in;
-        if (fwrite(_out, 1, o - _out, outf) != o - _out) return 1;
+        if (fread(in, 1, rsize, inf) != rsize) return 1; junk_t _8; str_t _s;
+        if (encode) {
+            if (vl_8_from_bytes(_in, rsize + tail, &_8, &tail)
+                || (insize == 0 && tail != 0)) return 1;
+            if (vl_from_8(&_8, &_s)) return 1;
+            if (fwrite(_s.p, 1, _s.s, outf) != _s.s) return 1; vl_free(&_s);
+        } else {
+            if (vl_from_bytes(_in, rsize + tail, &_s, &tail)
+                || (insize == 0 && tail != 0)) return 1;
+            if (vl_to_8(&_s, &_8)) return 1;
+            if (fwrite(_8.p, 1, _8.s, outf) != _8.s) return 1; free(_8.p);
+        }
+        if (tail == 0) in = _in; else memmove(_in, (in + rsize) - tail, tail), in = _in + tail;
     }
     
     return (int)(fclose(inf) || fclose(outf));
