@@ -15,23 +15,35 @@ _Bool vl_next(vl_iterator_t *i, int32_t *_c) {
     return 0;
 }
 
-static        uint8_t junk_S[256];
+static const  uint8_t junk_S[256] = {
+    
+    // x = [1] * 128 + [0] * 64 + [2] * 32 + [3] * 16 + [4] * 8 + [0] * 8
+    // 16.times do puts '    ' + x[_1 * 16, 16] * ', ' end
+    
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+    2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+    3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+    4, 4, 4, 4, 4, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0,
+    
+};
+
 static const uint32_t junk_L[5] = { 0,         0,     1 << 7,    1 << 11,    1 << 16  },
                       junk_M[5] = { 0, BITMASK(7), BITMASK(5), BITMASK(4), BITMASK(3) };
 
-static void init_junk_S() {
-    fin(128)         junk_S[i] = 1;
-    fix(192, 224, 1) junk_S[i] = 2;
-    fix(224, 240, 1) junk_S[i] = 3;
-    fix(240, 248, 1) junk_S[i] = 4;
-}
-
 _Bool vl_8_from_bytes(const uint8_t *p, size_t s, junk_t *_dest, size_t *tail) {
-    const uint8_t *t = p + s, *P = t; init_junk_S();
-    fin(5) { if (P == p) return 1; if ((*--P >> 6) != 2) break; }
-    if ((*tail = t - P) == 5) return 1;
-    if (junk_S[*P] == *tail) P = t, *tail = 0; else if (P == p) return 1;
-    *_dest = (junk_t){ (uint8_t *)p, s - *tail }; P -= 3;
+    const uint8_t *t = p + s, *P = t - 3;
     
     return 0;
 }
@@ -122,7 +134,7 @@ int vl_rcmp(const rstr_t *a, const rstr_t *b) {
 _Bool vl_from_8(const junk_t *_8,  str_t *_s) {
     if (_8->s == 0) { *_s = ( str_t){}; return 0; }
     uint8_t *o = _s->p = malloc(_8->s); if (o == NULL) return 1;
-    const uint8_t *p = _8->p, *const P = p + _8->s; init_junk_S(); _s->l = 0;
+    const uint8_t *p = _8->p, *const P = p + _8->s; _s->l = 0;
     while (p < P) {
         uint32_t char_size = junk_S[*p], c = *p++ & junk_M[char_size]; _s->l++;
         fix (1, char_size, 1) c = (c << 6) | (*p++ & BITMASK(6));
