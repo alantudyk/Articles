@@ -15,9 +15,9 @@ _Bool vl_next(vl_iterator_t *i, int32_t *_c) {
     return 0;
 }
 
-static  uint8_t junk_S[256];
-static uint32_t junk_L[5] = { 0,         0,     1 << 7,    1 << 11,    1 << 16  },
-                junk_M[5] = { 0, BITMASK(7), BITMASK(5), BITMASK(4), BITMASK(3) };
+static        uint8_t junk_S[256];
+static const uint32_t junk_L[5] = { 0,         0,     1 << 7,    1 << 11,    1 << 16  },
+                      junk_M[5] = { 0, BITMASK(7), BITMASK(5), BITMASK(4), BITMASK(3) };
 
 static void init_junk_S() {
     fin(128)         junk_S[i] = 1;
@@ -27,9 +27,11 @@ static void init_junk_S() {
 }
 
 _Bool vl_8_from_bytes(const uint8_t *p, size_t s, junk_t *_dest, size_t *tail) {
-    const uint8_t *t = p + s, *P = t; init_junk_S(); _dest->p = (uint8_t *)p;
+    const uint8_t *t = p + s, *P = t; init_junk_S();
     fin(5) { if (P == p) return 1; if ((*--P >> 6) != 2) break; }
-    if (t - P == 5) return 1;
+    if ((*tail = t - P) == 5) return 1;
+    if (junk_S[*P] == *tail) P = t, *tail = 0; else if (P == p) return 1;
+    *_dest = (junk_t){ (uint8_t *)p, s - *tail }; P -= 3;
     
     return 0;
 }
