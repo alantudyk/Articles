@@ -29,8 +29,8 @@ typedef struct vl_iterator_t { uint8_t *p; size_t l; } vl_iterator_t;
  void vl_rinit(vl_iterator_t *iterator, const rstr_t *r);
 _Bool  vl_next(vl_iterator_t *iterator,      int32_t *c);
 
-_Bool   vl_from_bytes(uint8_t *p, size_t s,  str_t *_dest, size_t *tail);
-_Bool vl_8_from_bytes(uint8_t *p, size_t s, junk_t *_dest, size_t *tail);
+_Bool   vl_from_bytes(const uint8_t *p, size_t s,  str_t *_dest, size_t *tail);
+_Bool vl_8_from_bytes(const uint8_t *p, size_t s, junk_t *_dest, size_t *tail);
 
 void  vl_free( str_t *s);
 void vl_rfree(rstr_t *r);

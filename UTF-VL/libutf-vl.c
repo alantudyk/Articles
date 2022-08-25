@@ -1,5 +1,7 @@
 #include "utf-vl.h"
 
+#define BETWEEN(l, v, r) ((l) <= (v) && (v) <= (r))
+
 void  vl_init(vl_iterator_t *i, const  str_t *s) {
     *i = (vl_iterator_t){ s->p, s->l };
 }
@@ -15,8 +17,29 @@ _Bool vl_next(vl_iterator_t *i, int32_t *_c) {
     return 0;
 }
 
-_Bool   vl_from_bytes(uint8_t *p, size_t s,  str_t *_dest, size_t *tail) {
-    
+_Bool   vl_from_bytes(const uint8_t *p, size_t s,  str_t *_dest, size_t *tail) {
+    const uint8_t *t = p + s, *P = t;
+    fin(3) { if (P == p) return 1; if (P[-1] & 128) --P; else break; }
+    if ((*tail = t - P) == 3) return 1; P -= 2;
+    *_dest = (str_t){ (uint8_t *)p, s - *tail, 0 };
+    while (p < P) {
+        uint32_t c = 0, char_size; t = p; _dest->l++;
+        fin(3) {
+            c |= (*p & BITMASK(7)) << (7 * i);
+            if ((*p++ & 128) == 0) break;
+        }
+        if (p[-1] & 128) return 1;
+        char_size = p - t;
+        if (char_size > 1) c += (char_size < 3) ? 128 : (1 << 14) + 128;
+        if (c > 1114111 || BETWEEN(2048, c, 4095)) return 1;
+    }
+    switch ((P + 2) - p) {
+        case 0: break;
+        case 1: _dest->l++;
+        case 2: if ((*p & 128) == 0) { _dest->l++; break; }
+                uint32_t c = ((p[1] << 7) | (p[0] & BITMASK(7))) + 128;
+                if (BETWEEN(2048, c, 4095)) return 1;
+    }
     return 0;
 }
 
@@ -31,7 +54,10 @@ static void init_junk_S() {
     fix(240, 248, 1) junk_S[i] = 4;
 }
 
-_Bool vl_8_from_bytes(uint8_t *p, size_t s, junk_t *_dest, size_t *tail) {
+_Bool vl_8_from_bytes(const uint8_t *p, size_t s, junk_t *_dest, size_t *tail) {
+    const uint8_t *t = p + s, *P = t;
+    fin(4) { if (P == p) return 1; if ((P[-1] >> 6) == 2) --P; else break; }
+    if ((*tail = t - P) == 4) return 1; P -= 3;
     
     return 0;
 }
@@ -101,7 +127,7 @@ int vl_rcmp(const rstr_t *a, const rstr_t *b) {
 _Bool vl_from_8(const junk_t *_8,  str_t *_s) {
     if (_8->s == 0) { *_s = ( str_t){}; return 0; }
     uint8_t *o = _s->p = malloc(_8->s); if (o == NULL) return 1;
-    const uint8_t *p = _8->p, *const P = p + _8->s; init_junk_S();
+    const uint8_t *p = _8->p, *const P = p + _8->s; init_junk_S(); _s->l = 0;
     while (p < P) {
         uint32_t char_size = junk_S[*p], c = *p++ & junk_M[char_size]; _s->l++;
         fix (1, char_size, 1) c = (c << 6) | (*p++ & BITMASK(6));
