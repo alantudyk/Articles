@@ -80,12 +80,10 @@ _Bool   vl_from_bytes(const uint8_t *p, size_t s,  str_t *_dest, size_t *tail) {
     if ((*tail = t - P) == 3) return 1; P -= 2;
     *_dest = (str_t){ (uint8_t *)p, s - *tail, 0 };
     while (p < P) {
-        uint32_t c = *p & BITMASK(7); _dest->l++;
-        if (*p++ & 128) {
-            c |= (*p & BITMASK(7)) << 7;
-            if (*p++ & 128) c |= *p++ << 14;
+        uint8_t c[4] = {}; _dest->l++;
+        if (((c[0] = *p++) & 128) && ((c[1] = *p++) & 128)) {
+            c[2] = *p++; if (*(uint32_t *)c > 4390655) return 1;
         }
-        if (c > 1114111 - ((1 << 14) + 128)) return 1;
     }
     switch ((P + 2) - p) {
         case 1: _dest->l++; break;
