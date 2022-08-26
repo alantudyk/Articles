@@ -163,12 +163,9 @@ _Bool vl_from_8(const junk_t *_8,  str_t *_s) {
     while (p < P) {
         uint32_t char_size = junk_S[*p], c = *p++ & junk_M[char_size]; _s->l++;
         fix (1, char_size, 1) c = (c << 6) | (*p++ & BITMASK(6));
-        if (c < 128) *o++ = c; else if ((c -= 128) < (1 << 14)) {
-            *o++ = 128 | (c & BITMASK(7)), *o++ = c >> 7;
-        } else {
-            *o++ = 128 | ((c -= 1 << 14) & BITMASK(7)),
-            *o++ = 128 | ((c >>       7) & BITMASK(7)), *o++ = c >> 14;
-        }
+        if (c < 128) *o++ = c;
+        else if ((c -= 128) < (1 << 14))  *o++ = 128 | c, *o++ = c >> 7;
+        else *o++ = 128 | (c -= 1 << 14), *o++ = 128 | (c >> 7), *o++ = c >> 14;
     }
     _s->p = realloc(_s->p, _s->s = o - _s->p);
     return 0;
