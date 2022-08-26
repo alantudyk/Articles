@@ -80,10 +80,10 @@ _Bool   vl_from_bytes(const uint8_t *p, size_t s,  str_t *_dest, size_t *tail) {
     if ((*tail = t - P) == 3) return 1; P -= 2;
     *_dest = (str_t){ (uint8_t *)p, s - *tail, 0 };
     while (p < P) {
-        uint32_t c = 0; _dest->l++;
-        fin(3) {
-            c |= (*p & BITMASK(7)) << (7 * i);
-            if ((*p++ & 128) == 0) break;
+        uint32_t c = *p & BITMASK(7); _dest->l++;
+        if (*p++ & 128) {
+            c |= (*p & BITMASK(7)) << 7;
+            if (*p++ & 128) c |= (*p++ & BITMASK(7)) << 14;
         }
         if (p[-1] & 128) return 1;
         if (c > 1114111 - ((1 << 14) + 128)) return 1;
@@ -178,14 +178,15 @@ _Bool vl_from_8(const junk_t *_8,  str_t *_s) {
 _Bool   vl_to_8(const  str_t *_s, junk_t *_8) {
     if (_s->s == 0) { *_8 = (junk_t){}; return 0; }
     uint8_t *o = _8->p = malloc(_s->s * 2); if (o == NULL) return 1;
-    const uint8_t *p = _s->p, *_p, *const P = p + _s->s;
+    const uint8_t *p = _s->p, *const P = p + _s->s;
     while (p < P) {
-        uint32_t c = 0, char_size; _p = p;
-        fin(3) {
-            c |= (*p & BITMASK(7)) << (7 * i);
-            if ((*p++ & 128) == 0) break;
+        uint32_t c = *p & BITMASK(7), char_size = 1;
+        if (*p++ & 128) {
+            c |= (*p & BITMASK(7)) << 7;
+            if (*p++ & 128)
+                c |= (*p++ & BITMASK(7)) << 14, char_size = 3;
+            else char_size = 2;
         }
-        char_size = p - _p;
         if (char_size > 1) c += (char_size < 3) ? 128 : (1 << 14) + 128;
         if (c < 128) *o++ = c; else if (c < (1 << 11)) {
             *o++ = 192 | (c >>  6), *o++ = 128 | ( c        & BITMASK(6));
