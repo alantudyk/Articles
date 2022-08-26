@@ -83,9 +83,8 @@ _Bool   vl_from_bytes(const uint8_t *p, size_t s,  str_t *_dest, size_t *tail) {
         uint32_t c = *p & BITMASK(7); _dest->l++;
         if (*p++ & 128) {
             c |= (*p & BITMASK(7)) << 7;
-            if (*p++ & 128) c |= (*p++ & BITMASK(7)) << 14;
+            if (*p++ & 128) c |= *p++ << 14;
         }
-        if (p[-1] & 128) return 1;
         if (c > 1114111 - ((1 << 14) + 128)) return 1;
     }
     switch ((P + 2) - p) {
@@ -183,9 +182,7 @@ _Bool   vl_to_8(const  str_t *_s, junk_t *_8) {
         uint32_t c = *p & BITMASK(7), char_size = 1;
         if (*p++ & 128) {
             c |= (*p & BITMASK(7)) << 7;
-            if (*p++ & 128)
-                c |= (*p++ & BITMASK(7)) << 14, char_size = 3;
-            else char_size = 2;
+            if (*p++ & 128) c |= *p++ << 14, char_size = 3; else char_size = 2;
         }
         if (char_size > 1) c += (char_size < 3) ? 128 : (1 << 14) + 128;
         if (c < 128) *o++ = c; else if (c < (1 << 11)) {
