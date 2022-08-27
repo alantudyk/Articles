@@ -171,15 +171,16 @@ _Bool vl_from_8(const junk_t *_8,  str_t *_s) {
 
 _Bool   vl_to_8(const  str_t *_s, junk_t *_8) {
     if (_s->s == 0) { *_8 = (junk_t){}; return 0; }
-    uint8_t *o = _8->p = malloc(_s->s * 2); if (o == NULL) return 1;
+    uint8_t *o = _8->p = malloc(_s->s + _s->s / 2 + 1); if (o == NULL) return 1;
     const uint8_t *p = _s->p, *const P = p + _s->s;
     while (p < P) {
-        uint32_t c = *p & BITMASK(7), char_size = 1;
+        uint32_t c = *p & BITMASK(7);
         if (*p++ & 128) {
             c |= (*p & BITMASK(7)) << 7;
-            if (*p++ & 128) c |= *p++ << 14, char_size = 3; else char_size = 2;
+            if (*p++ & 128)
+                c |= *p++ << 14, c += (1 << 14) + 128;
+            else c += 128;
         }
-        if (char_size > 1) c += (char_size < 3) ? 128 : (1 << 14) + 128;
         if (c < 128) *o++ = c; else if (c < (1 << 11)) {
             *o++ = 192 | (c >>  6), *o++ = 128 | ( c        & BITMASK(6));
         } else if (c < (1 << 16)) {
