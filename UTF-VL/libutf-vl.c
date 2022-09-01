@@ -144,13 +144,16 @@ _Bool vl_requal(const rstr_t *a, const rstr_t *b) {
 int  vl_cmp(const  str_t *a, const  str_t *b) {
     if (a->l > b->l) { const void *t = a; a = b, b = t; }
     const uint8_t *pa = a->p, *pb = b->p;
-    fiN(_, a->l) {
-        int32_t ca = 0, cb = 0;
-        uint8_t *cpa = (void *)&ca, *cpb = (void *)&cb;
-        do *cpa++ = *pa; while (*pa++ & 128);
-        do *cpb++ = *pb; while (*pb++ & 128);
-        if (ca != cb) return ca - cb;
-    }
+    if (a->l == a->s && b->l == b->s)
+        fin(a->l) if (pa[i] != pb[i]) return pa[i] - pb[i];
+    else
+        fiN(_, a->l) {
+            int32_t ca = 0, cb = 0;
+            uint8_t *cpa = (void *)&ca, *cpb = (void *)&cb;
+            do *cpa++ = *pa; while (*pa++ & 128);
+            do *cpb++ = *pb; while (*pb++ & 128);
+            if (ca != cb) return ca - cb;
+        }
     return -(b->l > a->l);
 }
 
