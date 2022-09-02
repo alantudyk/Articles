@@ -115,6 +115,9 @@ _Bool vl_concat(const str_t *a, const str_t *b, str_t *c) {
     if (c->p == NULL) return 1;
     memcpy(c->p       , a->p, a->s);
     memcpy(c->p + a->s, b->p, b->s);
+    if (c->l != c->s) {
+        
+    }
     return 0;
 }
 

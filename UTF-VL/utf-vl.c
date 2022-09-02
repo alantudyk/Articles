@@ -29,14 +29,11 @@ int main(int argc, char **argv) {
         const uint64_t rsize = (insize < BUFF_SIZE) ? insize : BUFF_SIZE; insize -= rsize;
         if (fread(in, 1, rsize, inf) != rsize) return 1; junk_t _8; str_t _s;
         if (encode) {
-            if (vl_8_from_bytes(_in, rsize + tail, &_8, &tail)
-                || (insize == 0 && tail != 0)) return 1;
-            if (vl_from_8(&_8, &_s)) return 1;
-            if (fwrite(_s.p, 1, _s.s, outf) != _s.s) return 1; vl_free(&_s);
-        } else {
-            if (vl_from_bytes(_in, rsize + tail, &_s, &tail)
-                || (insize == 0 && tail != 0) || vl_fwrite_as_8(&_s, outf)) return 1;
-        }
+            if (vl_8_from_bytes(_in, rsize + tail, &_8, &tail) || (insize == 0 && tail != 0)
+                || vl_from_8(&_8, &_s) || fwrite(_s.p, 1, _s.s, outf) != _s.s) return 1;
+            vl_free(&_s);
+        } else if (vl_from_bytes(_in, rsize + tail, &_s, &tail)
+                   || (insize == 0 && tail != 0) || vl_fwrite_as_8(&_s, outf)) return 1;
         if (tail == 0) in = _in; else memmove(_in, (in + rsize) - tail, tail), in = _in + tail;
     }
     
