@@ -20,7 +20,7 @@ void vl_free(str_t *s);
 
 size_t vl_char_size(const int32_t *c);
 
-_Bool  vl_char_at(const  str_t *s, size_t i, int32_t *c);
+_Bool vl_char_at(const str_t *s, size_t i, int32_t *c);
 
 _Bool vl_concat(const str_t *a, const str_t *b, str_t *_dest);
 

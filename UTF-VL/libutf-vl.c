@@ -183,9 +183,13 @@ _Bool   vl_to_8(const  str_t *_s, junk_t *_8) {
 void vl_move(str_t *a, str_t *b) { *b = *a; *a = (str_t){}; }
 
 _Bool vl_clone(const str_t *a, str_t *b) {
-    if (a->s == 0) { *b = (str_t){}; return 0; }
-    *b = *a, b->p = malloc(b->s);
-    if (b->p == NULL) return 1;
+    if (a->s == 0) { *b = (str_t){}; return 0; } *b = *a;
+    if ((b->p = malloc(b->s)) == NULL) { *b = (str_t){}; return 1; }
     memcpy(b->p, a->p, b->s);
+    if (b->a != NULL) {
+        const size_t z = (b->l / 16 + 1) * 4 * (1 + (b->s > (1L << 32)));
+        if ((b->a = malloc(z)) == NULL) { vl_free(b); return 1; }
+        memcpy(b->a, a->a, z);
+    }
     return 0;
 }
