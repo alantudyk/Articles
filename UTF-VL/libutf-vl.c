@@ -88,7 +88,7 @@ _Bool   vl_from_bytes(const uint8_t *p, size_t s,  str_t *_dest, size_t *tail) {
     return 0;
 }
 
-void vl_free(str_t *s) { free(s->p); *s = (str_t){}; }
+void vl_free(str_t *s) { free(s->p); /* free(s->a); */ *s = (str_t){}; }
 
 size_t vl_char_size(const int32_t *c) {
     const uint8_t *p = (const uint8_t *)c;
@@ -96,24 +96,14 @@ size_t vl_char_size(const int32_t *c) {
     return (size_t)(p - (const uint8_t *)c);
 }
 
-_Bool  vl_char_at(const  str_t *s, const size_t _i, int32_t *_c) {
+_Bool vl_char_at(const str_t *s, const size_t _i, int32_t *_c) {
     if (  _i >= s->l) return 1;
     if (s->l == s->s) *_c = *(s->p + _i); else {
-        const uint8_t *p = s->p; uint8_t *c = (uint8_t *)_c; *_c = 0;
-        fin(_i) while (*p++ & 128);
+        const uint8_t *p = s->p + (s->s > (1L << 32) ? ((uint64_t *)s->a)[_i / 16] :
+                                                       ((uint32_t *)s->a)[_i / 16]);
+        uint8_t *c = (uint8_t *)_c; *_c = 0;
+        fin(_i % 16) while (*p++ & 128);
         do *c++ = *p; while (*p++ & 128);
-    }
-    return 0;
-}
-
-_Bool vl_rchar_at(const rstr_t *r, const size_t _i, int32_t *c) {
-    if (  _i >= r->l) return 1;
-    if (r->l == r->s) *c = *(r->p + _i); else {
-        const str_t s = {
-            r->p + (r->s > (1L << 32) ? ((uint64_t *)r->a)[_i / 16] : ((uint32_t *)r->a)[_i / 16]),
-            0, 16
-        };
-        vl_char_at(&s, _i % 16, c);
     }
     return 0;
 }
