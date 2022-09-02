@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include "utf-vl.h"
-#include <stdio.h>
 
 #define BUFF_SIZE (1 << 22)
 
@@ -36,9 +35,7 @@ int main(int argc, char **argv) {
             if (fwrite(_s.p, 1, _s.s, outf) != _s.s) return 1; vl_free(&_s);
         } else {
             if (vl_from_bytes(_in, rsize + tail, &_s, &tail)
-                || (insize == 0 && tail != 0)) return 1;
-            if (vl_to_8(&_s, &_8)) return 1;
-            if (fwrite(_8.p, 1, _8.s, outf) != _8.s) return 1; free(_8.p);
+                || (insize == 0 && tail != 0) || vl_fwrite_as_8(&_s, outf)) return 1;
         }
         if (tail == 0) in = _in; else memmove(_in, (in + rsize) - tail, tail), in = _in + tail;
     }

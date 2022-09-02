@@ -2,6 +2,7 @@
 #define ___UTF_VL_H
 
 #include <stdint.h>
+#include <stdio.h>
 
 _Static_assert(__SIZEOF_POINTER__ == 8, "");
 
@@ -32,5 +33,8 @@ _Bool   vl_to_8(const  str_t *_s, junk_t *_8);
 
  void  vl_move(      str_t *_src, str_t *_dest);
 _Bool vl_clone(const str_t *_src, str_t *_dest);
+
+_Bool vl_fwrite_char_as_8(int32_t c, FILE *f);
+_Bool vl_fwrite_as_8(const str_t *s, FILE *f);
 
 #endif

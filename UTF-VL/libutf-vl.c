@@ -193,3 +193,13 @@ _Bool vl_clone(const str_t *a, str_t *b) {
     }
     return 0;
 }
+
+_Bool vl_fwrite_char_as_8(int32_t c, FILE *f) {
+    
+    return 0;
+}
+
+_Bool vl_fwrite_as_8(const str_t *s, FILE *f) {
+    junk_t _8 = {}; _Bool r = vl_to_8(s, &_8) || fwrite(_8.p, 1, _8.s, f) != _8.s;
+    free(_8.p); return r;
+}
