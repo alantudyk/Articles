@@ -197,6 +197,11 @@ _Bool vl_clone(const str_t *a, str_t *b) {
     return 0;
 }
 
+_Bool vl_mult(const str_t *_src, size_t mult, str_t *_dest) {
+    
+    return 0;
+}
+
 _Bool vl_fwrite_char_as_8(int32_t c, FILE *f) {
     
     return 0;
