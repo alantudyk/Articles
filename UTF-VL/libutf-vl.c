@@ -156,29 +156,33 @@ _Bool vl_from_8(const junk_t *_8,  str_t *_s) {
     return 0;
 }
 
+static inline void char_to_8(const uint8_t **_p, uint8_t **_o) {
+    const uint8_t *p = *_p; uint8_t *o = *_o;
+    uint32_t c = *p & BITMASK(7);
+    if (*p++ & 128) {
+        c |= (*p & BITMASK(7)) << 7;
+        if (*p++ & 128)
+            c |= *p++ << 14, c += (1 << 14) + 128;
+        else c += 128;
+    }
+    if (c < 128) *o++ = c; else if (c < (1 << 11)) {
+        *o++ = 192 | (c >>  6), *o++ = 128 | ( c        & BITMASK(6));
+    } else if (c < (1 << 16)) {
+        *o++ = 224 | (c >> 12), *o++ = 128 | ((c >> 6)  & BITMASK(6)),
+                                *o++ = 128 | ( c        & BITMASK(6));
+    } else {
+        *o++ = 240 | (c >> 18), *o++ = 128 | ((c >> 12) & BITMASK(6)),
+                                *o++ = 128 | ((c >>  6) & BITMASK(6)),
+                                *o++ = 128 | ( c        & BITMASK(6));
+    }
+    *_p = p, *_o = o;
+}
+
 _Bool   vl_to_8(const  str_t *_s, junk_t *_8) {
     if (_s->s == 0) { *_8 = (junk_t){}; return 0; }
     uint8_t *o = _8->p = malloc(_s->s + _s->s / 2 + 1); if (o == NULL) return 1;
     const uint8_t *p = _s->p, *const P = p + _s->s;
-    while (p < P) {
-        uint32_t c = *p & BITMASK(7);
-        if (*p++ & 128) {
-            c |= (*p & BITMASK(7)) << 7;
-            if (*p++ & 128)
-                c |= *p++ << 14, c += (1 << 14) + 128;
-            else c += 128;
-        }
-        if (c < 128) *o++ = c; else if (c < (1 << 11)) {
-            *o++ = 192 | (c >>  6), *o++ = 128 | ( c        & BITMASK(6));
-        } else if (c < (1 << 16)) {
-            *o++ = 224 | (c >> 12), *o++ = 128 | ((c >> 6)  & BITMASK(6)),
-                                    *o++ = 128 | ( c        & BITMASK(6));
-        } else {
-            *o++ = 240 | (c >> 18), *o++ = 128 | ((c >> 12) & BITMASK(6)),
-                                    *o++ = 128 | ((c >>  6) & BITMASK(6)),
-                                    *o++ = 128 | ( c        & BITMASK(6));
-        }
-    }
+    while (p < P) char_to_8(&p, &o);
     _8->p = realloc(_8->p, _8->s = o - _8->p);
     return 0;
 }
@@ -202,9 +206,11 @@ _Bool vl_mult(const str_t *_src, size_t mult, str_t *_dest) {
     return 0;
 }
 
-_Bool vl_fwrite_char_as_8(int32_t c, FILE *f) {
-    
-    return 0;
+_Bool vl_fwrite_char_as_8(const int32_t c, FILE *f) {
+    uint8_t out[4], *o = out;
+    const uint8_t *p = (void *)&c;
+    char_to_8(&p, &o);
+    return fwrite(out, 1, o - out, f) != o - out;
 }
 
 _Bool vl_fwrite_as_8(const str_t *s, FILE *f) {

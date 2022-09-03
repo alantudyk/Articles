@@ -1,5 +1,4 @@
 #include <sys/stat.h>
-#include <stdlib.h>
 #include <string.h>
 #include "utf-vl.h"
 
