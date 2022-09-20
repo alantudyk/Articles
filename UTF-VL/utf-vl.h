@@ -1,5 +1,4 @@
-#ifndef ___UTF_VL_H
-#define ___UTF_VL_H
+#pragma once
 
 #include <stdint.h>
 #include <stdio.h>
@@ -38,5 +37,3 @@ _Bool vl_mult(const str_t *_src, size_t mult, str_t *_dest);
 
 _Bool vl_fwrite_char_as_8(int32_t c, FILE *f);
 _Bool vl_fwrite_as_8(const str_t *s, FILE *f);
-
-#endif
